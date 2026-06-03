@@ -1,0 +1,16 @@
+{
+  "name": "tasty-microfrontends",
+  "version": "1.0.0",
+  "description": "Microfrontends: Angular (Shell) + React (Menú, Sedes, Admin) + Vue (Pedido, Gestión Pedidos)",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"npm run start:angular\" \"npm run start:react\" \"npm run start:vue\"",
+    "start:angular": "cd framework_angular && npm start",
+    "start:react": "cd framework_react && npm run dev",
+    "start:vue": "cd framework_vue && npm run dev",
+    "install:all": "cd framework_angular && npm install && cd ../framework_react && npm install && cd ../framework_vue && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
