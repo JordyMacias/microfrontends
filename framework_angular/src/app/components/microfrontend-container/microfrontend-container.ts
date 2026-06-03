@@ -2,6 +2,11 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/cor
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NgIf } from '@angular/common';
 import { MICROFRONTEND_CONFIG } from '../../../environments/microfrontends';
+import {
+  getMicrofrontendOrigin,
+  isAllowedMicrofrontendUrl,
+  postMessageToTarget,
+} from '../../utils/post-message.util';
 
 @Component({
   selector: 'app-microfrontend-container',
@@ -78,6 +83,10 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
     const baseUrl = config.baseUrl;
     const path = this.route.startsWith('/') ? this.route : `/${this.route}`;
     const url = `${baseUrl}${path}`;
+    if (!isAllowedMicrofrontendUrl(url)) {
+      this.iframeUrl = null;
+      return;
+    }
     this.iframeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
@@ -102,10 +111,12 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
       }
 
       // Enviar mensaje después de un pequeño delay para asegurar que el iframe esté listo
+      const targetOrigin = getMicrofrontendOrigin(this.app);
       setTimeout(() => {
-        iframe.contentWindow?.postMessage(
-          { type: 'admin-section', section },
-          '*'
+        postMessageToTarget(
+          iframe.contentWindow,
+          targetOrigin,
+          { type: 'admin-section', section }
         );
       }, 500);
     }

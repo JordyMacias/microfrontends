@@ -1,5 +1,20 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
+import {
+  isAllowedMicrofrontendOrigin,
+  postMessageToTarget,
+} from './utils/post-message.util';
+
+interface MicrofrontendMessage {
+  type: string;
+  route?: string;
+  items?: unknown[];
+  sede?: string;
+}
+
+function isMicrofrontendMessage(data: unknown): data is MicrofrontendMessage {
+  return Boolean(data) && typeof data === 'object' && 'type' in (data as object);
+}
 
 @Component({
   selector: 'app-root',
@@ -19,13 +34,19 @@ export class App implements OnInit, OnDestroy {
   ngOnInit() {
     // Listener global para mensajes de navegación desde iframes
     this.globalMessageHandler = (event: MessageEvent) => {
+      if (!isAllowedMicrofrontendOrigin(event.origin)) {
+        return;
+      }
+
       const data = event.data;
-      if (!data || typeof data !== 'object') return;
+      if (!isMicrofrontendMessage(data)) {
+        return;
+      }
 
       // 1) Navegación solicitada desde React/Vue
-      if ((data as any).type === 'navigate') {
-        const route = (data as any).route;
-        if (route) {
+      if (data.type === 'navigate') {
+        const route = data.route;
+        if (route && typeof route === 'string' && route.startsWith('/')) {
           console.log('[App] ✅ Navegación solicitada desde iframe:', route, 'Origen:', event.origin);
 
           this.router.navigateByUrl(route).then(() => {
@@ -40,9 +61,9 @@ export class App implements OnInit, OnDestroy {
       }
 
       // 2) React -> Angular: guardar carrito para Vue
-      if ((data as any).type === 'set-carrito') {
-        const items = (data as any).items;
-        const sede = (data as any).sede;
+      if (data.type === 'set-carrito') {
+        const items = data.items;
+        const sede = data.sede;
         if (Array.isArray(items)) {
           this.carritoCache = items;
           try {
@@ -65,7 +86,7 @@ export class App implements OnInit, OnDestroy {
       }
 
       // 3) Vue -> Angular: solicitar carrito (Angular responde al source)
-      if ((data as any).type === 'get-carrito') {
+      if (data.type === 'get-carrito') {
         // Intentar recuperar desde localStorage si el cache está vacío
         if (!this.carritoCache?.length) {
           try {
@@ -90,12 +111,9 @@ export class App implements OnInit, OnDestroy {
           sede: this.pedidoSedeCache ?? '',
         };
 
-        try {
-          (event.source as Window | null)?.postMessage(response, '*');
-          console.log('[App] ✅ Enviando carrito a Vue. Items:', (response.items as any[]).length);
-        } catch (e) {
-          console.error('[App] ❌ Error enviando carrito a Vue:', e);
-        }
+        const source = event.source as Window | null;
+        postMessageToTarget(source, event.origin, response);
+        console.log('[App] ✅ Enviando carrito a Vue. Items:', (response.items as unknown[]).length);
         return;
       }
     };
