@@ -184,7 +184,7 @@ export class Acceso {
       const apellido = nombreCompleto.slice(1).join(' ') || this.registerData.apellido.trim() || '';
 
       const nuevoUsuario: Usuario = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+        id: crypto.randomUUID(),
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         email: this.registerData.email.toLowerCase().trim(),
