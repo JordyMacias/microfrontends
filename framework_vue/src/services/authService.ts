@@ -1,12 +1,9 @@
 import type { Usuario } from '../types';
+import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../config/auth';
 
 const STORAGE_KEY_USUARIOS = 'tasty_usuarios';
 const STORAGE_KEY_SESION = 'tasty_sesion';
 const STORAGE_KEY_ADMIN = 'tasty_admin_sesion';
-
-// Configuración de administrador
-const ADMIN_EMAIL = 'admin@tastyuleam.com';
-const ADMIN_PASSWORD = 'admin123';
 
 // Obtener usuarios desde localStorage
 const obtenerUsuariosDesdeStorage = (): Usuario[] => {

@@ -1,5 +1,7 @@
 export const environment = {
   production: true,
   supabaseUrl: '',
-  supabaseKey: ''
+  supabaseKey: '',
+  adminEmail: 'admin@tastyuleam.com',
+  adminPassword: 'admin123',
 };

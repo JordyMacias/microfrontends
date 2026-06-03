@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Usuario {
   id: string | number;
@@ -18,9 +19,9 @@ const STORAGE_KEY_SESION = 'tasty_sesion';
 const STORAGE_KEY_USUARIOS = 'tasty_usuarios';
 const STORAGE_KEY_ADMIN = 'tasty_admin_sesion';
 
-// Credenciales de administrador
-const ADMIN_EMAIL = 'admin@tastyuleam.com';
-const ADMIN_PASSWORD = 'admin123';
+// Credenciales de administrador (configurables por entorno)
+const ADMIN_EMAIL = environment.adminEmail;
+const ADMIN_PASSWORD = environment.adminPassword;
 
 @Injectable({
   providedIn: 'root',
