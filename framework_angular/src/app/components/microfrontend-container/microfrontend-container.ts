@@ -1,12 +1,11 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SafeResourceUrl } from '@angular/platform-browser';
 import { NgIf } from '@angular/common';
-import { MICROFRONTEND_CONFIG } from '../../../environments/microfrontends';
 import {
   getMicrofrontendOrigin,
-  isAllowedMicrofrontendUrl,
   postMessageToTarget,
 } from '../../utils/post-message.util';
+import { MicrofrontendUrlService } from '../../utils/microfrontend-url.service';
 
 @Component({
   selector: 'app-microfrontend-container',
@@ -59,7 +58,7 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
   iframeUrl: SafeResourceUrl | null = null;
 
   constructor(
-    private readonly sanitizer: DomSanitizer
+    private readonly microfrontendUrlService: MicrofrontendUrlService
   ) {}
 
   ngOnInit() {
@@ -74,20 +73,10 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
   }
 
   private updateIframeUrl() {
-    if (!this.app || !this.route) {
-      this.iframeUrl = null;
-      return;
-    }
-
-    const config = MICROFRONTEND_CONFIG[this.app];
-    const baseUrl = config.baseUrl;
-    const path = this.route.startsWith('/') ? this.route : `/${this.route}`;
-    const url = `${baseUrl}${path}`;
-    if (!isAllowedMicrofrontendUrl(url)) {
-      this.iframeUrl = null;
-      return;
-    }
-    this.iframeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.iframeUrl = this.microfrontendUrlService.resolveTrustedResourceUrl(
+      this.app,
+      this.route
+    );
   }
 
   onIframeLoad() {

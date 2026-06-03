@@ -8,7 +8,7 @@
     "start:angular": "cd framework_angular && npm start",
     "start:react": "cd framework_react && npm run dev",
     "start:vue": "cd framework_vue && npm run dev",
-    "install:all": "cd framework_angular && npm install && cd ../framework_react && npm install && cd ../framework_vue && npm install"
+    "install:all": "npm install && cd framework_angular && npm ci && cd ../framework_react && npm ci && cd ../framework_vue && npm ci"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
