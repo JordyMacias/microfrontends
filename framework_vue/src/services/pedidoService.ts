@@ -19,7 +19,7 @@ export const obtenerPedidos = async (): Promise<Pedido[]> => {
       sede: p.sede || '',
       facultad: p.facultad || undefined,
       items: (p.items || []) as PedidoItem[],
-      total: typeof p.total === 'number' ? p.total : parseFloat(String(p.total)) || 0,
+      total: typeof p.total === 'number' ? p.total : Number.parseFloat(String(p.total)) || 0,
       estado: (p.estado as Pedido['estado']) || 'pendiente',
       cliente: p.cliente || '',
       cedula: p.cedula || undefined,
