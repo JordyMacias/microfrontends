@@ -112,6 +112,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
 import type { Pedido } from '../types';
+import { postToParent } from '../config/messaging';
 import '../styles/tasty.css';
 
 // No necesita emits ahora
@@ -235,7 +236,7 @@ const handleCerrarSesion = () => {
     sessionStorage.removeItem('adminEmail');
     window.location.hash = '/';
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'navigate', route: '/home' }, '*');
+      postToParent({ type: 'navigate', route: '/home' });
     }
   }
 };
@@ -245,7 +246,7 @@ onMounted(async () => {
   if (!verificarAdminLogueado()) {
     alert('Debes iniciar sesión como administrador para acceder a esta sección.');
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'navigate', route: '/acceso' }, '*');
+      postToParent({ type: 'navigate', route: '/acceso' });
     } else {
       window.location.hash = '/login';
     }

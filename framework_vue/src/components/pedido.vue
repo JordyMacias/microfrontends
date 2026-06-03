@@ -259,6 +259,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { crearPedido, obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
 import { obtenerUsuarioActual } from '../services/authService';
 import type { PedidoItem, Pedido } from '../types';
+import { isShellOrigin, postToParent } from '../config/messaging';
 import '../styles/tasty.css';
 
 // Props - si se reciben items desde fuera
@@ -424,7 +425,9 @@ onMounted(async () => {
   // React (5173) y Vue (5174) NO comparten localStorage.
   // Pedimos el carrito al Angular (parent) vía postMessage.
   const handleMessage = (event: MessageEvent) => {
-    const data: any = event.data;
+    if (!isShellOrigin(event.origin)) return;
+
+    const data = event.data as { type?: string; items?: unknown[]; sede?: string };
     if (!data || typeof data !== 'object') return;
     if (data.type !== 'carrito-data') return;
 
@@ -458,10 +461,10 @@ onMounted(async () => {
 
   // Solicitar el carrito al parent (Angular)
   if (window.parent && window.parent !== window) {
-    window.parent.postMessage({ type: 'get-carrito' }, '*');
+    postToParent({ type: 'get-carrito' });
     // Retry corto por si Vue monta antes de que Angular guarde
-    setTimeout(() => window.parent.postMessage({ type: 'get-carrito' }, '*'), 300);
-    setTimeout(() => window.parent.postMessage({ type: 'get-carrito' }, '*'), 800);
+    setTimeout(() => postToParent({ type: 'get-carrito' }), 300);
+    setTimeout(() => postToParent({ type: 'get-carrito' }), 800);
   }
 
   // Escuchar cambios de autenticación desde Angular
@@ -608,7 +611,7 @@ const handleSubmit = async () => {
       // Notificar al parent (Angular) que el carrito se limpió
       if (window.parent && window.parent !== window) {
         try {
-          window.parent.postMessage({ type: 'set-carrito', items: [], sede: '' }, '*');
+          postToParent({ type: 'set-carrito', items: [], sede: '' });
         } catch (e) {
           console.error('Error notificando limpieza de carrito:', e);
         }
