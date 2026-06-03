@@ -1,16 +1,13 @@
-import { Injectable, inject } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { isMicrofrontendApp, toTrustedMicrofrontendResourceUrl } from './microfrontend-url.util';
+import { Injectable } from '@angular/core';
+import { buildMicrofrontendUrl, isMicrofrontendApp } from './microfrontend-url.util';
 
 @Injectable({ providedIn: 'root' })
 export class MicrofrontendUrlService {
-  private readonly sanitizer = inject(DomSanitizer);
-
-  resolveTrustedResourceUrl(app: string, route: string): SafeResourceUrl | null {
+  resolveMicrofrontendUrl(app: string, route: string): string | null {
     if (!app || !route || !isMicrofrontendApp(app)) {
       return null;
     }
 
-    return toTrustedMicrofrontendResourceUrl(this.sanitizer, app, route);
+    return buildMicrofrontendUrl(app, route);
   }
 }

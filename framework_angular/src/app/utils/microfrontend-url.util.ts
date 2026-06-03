@@ -1,4 +1,3 @@
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MICROFRONTEND_CONFIG } from '../../environments/microfrontends';
 import { isAllowedMicrofrontendUrl } from './post-message.util';
 
@@ -46,37 +45,4 @@ export function buildMicrofrontendUrl(app: MicrofrontendApp, route: string): str
   const url = `${baseUrl}${path}`;
 
   return isAllowedMicrofrontendUrl(url) ? url : null;
-}
-
-/**
- * Único punto donde se desactiva la sanitización de Angular para iframes.
- *
- * Es seguro porque:
- * 1. `app` solo puede ser 'react' | 'vue' (no texto libre del usuario).
- * 2. `baseUrl` proviene de MICROFRONTEND_CONFIG, no de query params ni formularios.
- * 3. `normalizeMicrofrontendRoute` bloquea esquemas maliciosos en la ruta.
- * 4. `isAllowedMicrofrontendUrl` exige http(s) y un origen de la lista blanca.
- */
-export function toTrustedMicrofrontendResourceUrl(
-  sanitizer: DomSanitizer,
-  app: MicrofrontendApp,
-  route: string
-): SafeResourceUrl | null {
-  if (!isMicrofrontendApp(app)) {
-    return null;
-  }
-
-  const path = normalizeMicrofrontendRoute(route);
-  if (!path) {
-    return null;
-  }
-
-  const baseUrl = MICROFRONTEND_CONFIG[app].baseUrl.replace(/\/$/, '');
-  const url = `${baseUrl}${path}`;
-
-  if (!isAllowedMicrofrontendUrl(url)) {
-    return null;
-  }
-
-  return sanitizer.bypassSecurityTrustResourceUrl(url);
 }

@@ -1,5 +1,12 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { SafeResourceUrl } from '@angular/platform-browser';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { NgIf } from '@angular/common';
 import {
   getMicrofrontendOrigin,
@@ -14,13 +21,13 @@ import { MicrofrontendUrlService } from '../../utils/microfrontend-url.service';
   template: `
     <div class="microfrontend-wrapper">
       <iframe
-        *ngIf="iframeUrl"
-        [src]="iframeUrl"
+        #mfIframe
+        *ngIf="iframeSrc"
         class="microfrontend-iframe"
         title="Microfrontend"
         (load)="onIframeLoad()"
       ></iframe>
-      <div *ngIf="!iframeUrl" class="microfrontend-placeholder">
+      <div *ngIf="!iframeSrc" class="microfrontend-placeholder">
         <p>Selecciona una ruta para cargar el microfrontend</p>
       </div>
     </div>
@@ -55,7 +62,15 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
   @Input() app: 'react' | 'vue' = 'react';
   @Input() route = '';
 
-  iframeUrl: SafeResourceUrl | null = null;
+  iframeSrc: string | null = null;
+
+  private mfIframeRef?: ElementRef<HTMLIFrameElement>;
+
+  @ViewChild('mfIframe')
+  set mfIframe(ref: ElementRef<HTMLIFrameElement> | undefined) {
+    this.mfIframeRef = ref;
+    this.syncIframeSrc();
+  }
 
   constructor(
     private readonly microfrontendUrlService: MicrofrontendUrlService
@@ -73,10 +88,23 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
   }
 
   private updateIframeUrl() {
-    this.iframeUrl = this.microfrontendUrlService.resolveTrustedResourceUrl(
+    this.iframeSrc = this.microfrontendUrlService.resolveMicrofrontendUrl(
       this.app,
       this.route
     );
+    this.syncIframeSrc();
+  }
+
+  /** Asigna src tras validación; evita bypassSecurityTrustResourceUrl en plantilla. */
+  private syncIframeSrc(): void {
+    const iframe = this.mfIframeRef?.nativeElement;
+    const url = this.iframeSrc;
+    if (!iframe || !url) {
+      return;
+    }
+    if (iframe.getAttribute('src') !== url) {
+      iframe.setAttribute('src', url);
+    }
   }
 
   onIframeLoad() {

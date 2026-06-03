@@ -1,19 +1,10 @@
-import { TestBed } from '@angular/core/testing';
-import { DomSanitizer } from '@angular/platform-browser';
 import {
   buildMicrofrontendUrl,
   isMicrofrontendApp,
   normalizeMicrofrontendRoute,
-  toTrustedMicrofrontendResourceUrl,
 } from './microfrontend-url.util';
 
 describe('microfrontend-url.util', () => {
-  let sanitizer: DomSanitizer;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    sanitizer = TestBed.inject(DomSanitizer);
-  });
 
   it('acepta solo apps configuradas', () => {
     expect(isMicrofrontendApp('react')).toBeTrue();
@@ -36,17 +27,5 @@ describe('microfrontend-url.util', () => {
       'http://localhost:5174/#/pedido'
     );
     expect(buildMicrofrontendUrl('react', 'javascript:alert(1)')).toBeNull();
-  });
-
-  it('genera SafeResourceUrl solo para URLs validadas', () => {
-    const trusted = toTrustedMicrofrontendResourceUrl(sanitizer, 'react', '/');
-    expect(trusted).not.toBeNull();
-
-    const blocked = toTrustedMicrofrontendResourceUrl(
-      sanitizer,
-      'react',
-      'javascript:alert(1)'
-    );
-    expect(blocked).toBeNull();
   });
 });
