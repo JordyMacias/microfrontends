@@ -79,10 +79,8 @@ const buscarUsuarioPorEmail = (email: string): Usuario | null => {
   return usuarios.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
 };
 
-// Generar ID único
-const generarIdUnico = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-};
+// Generar ID único (criptográficamente seguro, regla Sonar S2245)
+const generarIdUnico = (): string => crypto.randomUUID();
 
 // Interface para datos de registro
 interface RegistroDatos {
