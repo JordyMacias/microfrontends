@@ -142,7 +142,8 @@
               name="acceptTerms"
               id="acceptTerms"
               [(ngModel)]="registerData.acceptTerms"
-              (click)="limpiarError()">
+              (change)="limpiarError()"
+              (keydown)="limpiarError()">
             <span>Acepto los términos y condiciones</span>
           </label>
         </div>
