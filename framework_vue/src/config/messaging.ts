@@ -1,6 +1,10 @@
 /** Origen del shell Angular en desarrollo local */
 export const SHELL_ORIGIN = 'http://localhost:4200';
 
+function getBrowserWindow(): Window {
+  return globalThis as unknown as Window;
+}
+
 export function getShellOrigin(): string {
   if (typeof document !== 'undefined' && document.referrer) {
     try {
@@ -24,8 +28,14 @@ export function isShellOrigin(origin: string): boolean {
 }
 
 export function postToParent(message: unknown): void {
-  if (!window.parent || window.parent === window) {
+  const win = getBrowserWindow();
+  if (!win.parent || win.parent === win) {
     return;
   }
-  window.parent.postMessage(message, getShellOrigin());
+  win.parent.postMessage(message, getShellOrigin());
+}
+
+export function isEmbeddedInShell(): boolean {
+  const win = getBrowserWindow();
+  return Boolean(win.parent && win.parent !== win);
 }

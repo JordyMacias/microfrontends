@@ -3,6 +3,16 @@ import type { Pedido, PedidoItem } from '../types';
 // Misma clave que Vue para que el admin vea los pedidos que hacen los usuarios
 const STORAGE_KEY = 'tasty_pedidos';
 
+function toDisplayString(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return String(value);
+  }
+  return '';
+}
+
 // Obtener pedidos (desde tasty_pedidos, mismo storage que Vue)
 export const obtenerPedidos = (): Pedido[] => {
   try {
@@ -12,11 +22,11 @@ export const obtenerPedidos = (): Pedido[] => {
     return parsed.map((p) => ({
       id: Number(p['id']),
       fecha: typeof p['fecha'] === 'string' ? p['fecha'] : new Date().toISOString(),
-      sede: String(p['sede'] ?? ''),
+      sede: toDisplayString(p['sede']),
       items: Array.isArray(p['items']) ? p['items'] as PedidoItem[] : [],
       total: Number(p['total'] ?? 0),
       estado: (p['estado'] as Pedido['estado']) || 'pendiente',
-      cliente: String(p['cliente'] ?? ''),
+      cliente: toDisplayString(p['cliente']),
     }));
   } catch {
     return [];

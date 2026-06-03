@@ -112,7 +112,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
 import type { Pedido } from '../types';
-import { postToParent } from '../config/messaging';
+import { isEmbeddedInShell, postToParent } from '../config/messaging';
 import '../styles/tasty.css';
 
 // No necesita emits ahora
@@ -213,7 +213,7 @@ const formatearEstado = (estado: Pedido['estado']) => {
 // Verificar autenticación de admin.
 // Si estamos en iframe, el shell Angular ya restringe /admin/pedidos a admins → no pedir sesión ni mostrar mensaje.
 const verificarAdminLogueado = (): boolean => {
-  if (window.self !== window.top) {
+  if (globalThis.self !== globalThis.top) {
     return true;
   }
   try {
@@ -234,8 +234,8 @@ const handleCerrarSesion = () => {
     sessionStorage.removeItem('tasty_admin_sesion');
     sessionStorage.removeItem('adminLoggedIn');
     sessionStorage.removeItem('adminEmail');
-    window.location.hash = '/';
-    if (window.parent && window.parent !== window) {
+    globalThis.location.hash = '/';
+    if (isEmbeddedInShell()) {
       postToParent({ type: 'navigate', route: '/home' });
     }
   }
@@ -245,10 +245,10 @@ const handleCerrarSesion = () => {
 onMounted(async () => {
   if (!verificarAdminLogueado()) {
     alert('Debes iniciar sesión como administrador para acceder a esta sección.');
-    if (window.parent && window.parent !== window) {
+    if (isEmbeddedInShell()) {
       postToParent({ type: 'navigate', route: '/acceso' });
     } else {
-      window.location.hash = '/login';
+      globalThis.location.hash = '/login';
     }
     return;
   }
@@ -256,7 +256,7 @@ onMounted(async () => {
   await cargarPedidos();
 
   // Configurar actualización automática cada 2 segundos
-  intervaloActualizacion = window.setInterval(async () => {
+  intervaloActualizacion = globalThis.setInterval(async () => {
     await cargarPedidos();
   }, 2000);
 });

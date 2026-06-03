@@ -23,7 +23,7 @@ export const cargarMenusEjemplo = (): MenuItem[] => {
     { 
       id: 1, 
       nombre: 'Hamburguesa Clásica', 
-      precio: 5.50, 
+      precio: 5.5, 
       categoria: 'Platos Principales', 
       sede: 'Tasty Central', 
       descripcion: 'Jugosa hamburguesa con carne 100% res', 
@@ -33,7 +33,7 @@ export const cargarMenusEjemplo = (): MenuItem[] => {
     { 
       id: 2, 
       nombre: 'Pizza Margarita', 
-      precio: 6.00, 
+      precio: 6, 
       categoria: 'Platos Principales', 
       sede: 'Tasty Central', 
       descripcion: 'Pizza tradicional italiana', 
@@ -43,7 +43,7 @@ export const cargarMenusEjemplo = (): MenuItem[] => {
     { 
       id: 3, 
       nombre: 'Combo Express', 
-      precio: 5.00, 
+      precio: 5, 
       categoria: 'Combos', 
       sede: 'Tasty Express', 
       descripcion: 'Combo completo con hamburguesa', 
@@ -53,7 +53,7 @@ export const cargarMenusEjemplo = (): MenuItem[] => {
     { 
       id: 4, 
       nombre: 'Arroz con Pollo', 
-      precio: 4.50, 
+      precio: 4.5, 
       categoria: 'Platos Principales', 
       sede: 'Tasty Comedor', 
       descripcion: 'Tradicional arroz con pollo ecuatoriano', 

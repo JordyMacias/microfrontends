@@ -31,7 +31,7 @@ export function isAllowedMicrofrontendUrl(url: string): boolean {
 }
 
 export function postMessageToTarget(
-  target: Window | null | undefined,
+  target: MessageEventSource | null | undefined,
   targetOrigin: string,
   message: unknown
 ): void {
@@ -39,7 +39,9 @@ export function postMessageToTarget(
     return;
   }
   try {
-    target.postMessage(message, targetOrigin);
+    if ('postMessage' in target && typeof target.postMessage === 'function') {
+      target.postMessage(message, targetOrigin);
+    }
   } catch {
     // Ignorar errores de cross-origin en entorno local
   }

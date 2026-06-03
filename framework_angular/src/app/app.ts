@@ -29,101 +29,131 @@ export class App implements OnInit, OnDestroy {
   private carritoCache: unknown[] = [];
   private pedidoSedeCache = '';
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
-  ngOnInit() {
-    // Listener global para mensajes de navegación desde iframes
-    this.globalMessageHandler = (event: MessageEvent) => {
-      if (!isAllowedMicrofrontendOrigin(event.origin)) {
-        return;
-      }
-
-      const data = event.data;
-      if (!isMicrofrontendMessage(data)) {
-        return;
-      }
-
-      // 1) Navegación solicitada desde React/Vue
-      if (data.type === 'navigate') {
-        const route = data.route;
-        if (route && typeof route === 'string' && route.startsWith('/')) {
-          console.log('[App] ✅ Navegación solicitada desde iframe:', route, 'Origen:', event.origin);
-
-          this.router.navigateByUrl(route).then(() => {
-            console.log('[App] ✅ Navegación completada a:', route);
-          }).catch(err => {
-            console.error('[App] ❌ Error al navegar:', err);
-            console.log('[App] Usando fallback: window.location.href');
-            window.location.href = route;
-          });
-        }
-        return;
-      }
-
-      // 2) React -> Angular: guardar carrito para Vue
-      if (data.type === 'set-carrito') {
-        const items = data.items;
-        const sede = data.sede;
-        if (Array.isArray(items)) {
-          this.carritoCache = items;
-          try {
-            localStorage.setItem('carritoItems', JSON.stringify(items));
-          } catch {
-            // ignore
-          }
-          console.log('[App] 🛒 Carrito recibido desde React. Items:', items.length);
-        }
-        if (typeof sede === 'string') {
-          this.pedidoSedeCache = sede;
-          try {
-            localStorage.setItem('pedidoSede', sede);
-          } catch {
-            // ignore
-          }
-          console.log('[App] 🏪 Sede recibida desde React:', sede);
-        }
-        return;
-      }
-
-      // 3) Vue -> Angular: solicitar carrito (Angular responde al source)
-      if (data.type === 'get-carrito') {
-        // Intentar recuperar desde localStorage si el cache está vacío
-        if (!this.carritoCache?.length) {
-          try {
-            const stored = localStorage.getItem('carritoItems');
-            if (stored) this.carritoCache = JSON.parse(stored);
-          } catch {
-            // ignore
-          }
-        }
-        if (!this.pedidoSedeCache) {
-          try {
-            const storedSede = localStorage.getItem('pedidoSede');
-            if (storedSede) this.pedidoSedeCache = storedSede;
-          } catch {
-            // ignore
-          }
-        }
-
-        const response = {
-          type: 'carrito-data',
-          items: this.carritoCache ?? [],
-          sede: this.pedidoSedeCache ?? '',
-        };
-
-        const source = event.source as Window | null;
-        postMessageToTarget(source, event.origin, response);
-        console.log('[App] ✅ Enviando carrito a Vue. Items:', (response.items as unknown[]).length);
-        return;
-      }
-    };
-    window.addEventListener('message', this.globalMessageHandler);
+  ngOnInit(): void {
+    this.globalMessageHandler = (event) => this.handleMicrofrontendMessage(event);
+    globalThis.addEventListener('message', this.globalMessageHandler);
     console.log('[App] ✅ Listener de mensajes configurado en App.ts');
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     if (this.globalMessageHandler) {
-      window.removeEventListener('message', this.globalMessageHandler);
+      globalThis.removeEventListener('message', this.globalMessageHandler);
+    }
+  }
+
+  private handleMicrofrontendMessage(event: MessageEvent): void {
+    if (!isAllowedMicrofrontendOrigin(event.origin)) {
+      return;
+    }
+
+    const data = event.data;
+    if (!isMicrofrontendMessage(data)) {
+      return;
+    }
+
+    switch (data.type) {
+      case 'navigate':
+        this.handleNavigateMessage(data);
+        break;
+      case 'set-carrito':
+        this.handleSetCarritoMessage(data);
+        break;
+      case 'get-carrito':
+        this.handleGetCarritoMessage(event);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private handleNavigateMessage(data: MicrofrontendMessage): void {
+    const route = data.route;
+    if (!route || typeof route !== 'string' || !route.startsWith('/')) {
+      return;
+    }
+
+    console.log('[App] ✅ Navegación solicitada desde iframe:', route);
+
+    this.router.navigateByUrl(route).then(() => {
+      console.log('[App] ✅ Navegación completada a:', route);
+    }).catch((err) => {
+      console.error('[App] ❌ Error al navegar:', err);
+      globalThis.location.href = route;
+    });
+  }
+
+  private handleSetCarritoMessage(data: MicrofrontendMessage): void {
+    const items = data.items;
+    const sede = data.sede;
+
+    if (Array.isArray(items)) {
+      this.carritoCache = items;
+      this.persistCarritoItems(items);
+      console.log('[App] 🛒 Carrito recibido desde React. Items:', items.length);
+    }
+
+    if (typeof sede === 'string') {
+      this.pedidoSedeCache = sede;
+      this.persistPedidoSede(sede);
+      console.log('[App] 🏪 Sede recibida desde React:', sede);
+    }
+  }
+
+  private handleGetCarritoMessage(event: MessageEvent): void {
+    this.hydrateCarritoCacheFromStorage();
+
+    const response = {
+      type: 'carrito-data',
+      items: this.carritoCache,
+      sede: this.pedidoSedeCache,
+    };
+
+    const itemCount = Array.isArray(response.items) ? response.items.length : 0;
+    postMessageToTarget(event.source, event.origin, response);
+    console.log('[App] ✅ Enviando carrito a Vue. Items:', itemCount);
+  }
+
+  private hydrateCarritoCacheFromStorage(): void {
+    if (this.carritoCache.length > 0) {
+      return;
+    }
+
+    try {
+      const stored = localStorage.getItem('carritoItems');
+      if (stored) {
+        this.carritoCache = JSON.parse(stored) as unknown[];
+      }
+    } catch {
+      // Sin carrito persistido
+    }
+
+    if (!this.pedidoSedeCache) {
+      try {
+        const storedSede = localStorage.getItem('pedidoSede');
+        if (storedSede) {
+          this.pedidoSedeCache = storedSede;
+        }
+      } catch {
+        // Sin sede persistida
+      }
+    }
+  }
+
+  private persistCarritoItems(items: unknown[]): void {
+    try {
+      localStorage.setItem('carritoItems', JSON.stringify(items));
+    } catch {
+      // Almacenamiento no disponible
+    }
+  }
+
+  private persistPedidoSede(sede: string): void {
+    try {
+      localStorage.setItem('pedidoSede', sede);
+    } catch {
+      // Almacenamiento no disponible
     }
   }
 }

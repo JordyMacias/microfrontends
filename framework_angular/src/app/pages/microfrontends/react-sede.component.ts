@@ -11,7 +11,7 @@ import { MicrofrontendContainer } from '../../components/microfrontend-container
 export class ReactSedeComponent implements OnInit {
   sedeRoute = '';
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private readonly route: ActivatedRoute) {}
 
   ngOnInit() {
     this.route.params.subscribe((params) => {

@@ -38,12 +38,12 @@
 
 .tab-button:hover {
   background: rgba(255, 107, 53, 0.1);
-  color: #ff6b35;
+  color: #ffb088;
 }
 
 .tab-button.active {
-  color: #ff6b35;
-  border-bottom-color: #ff6b35;
+  color: #ffb088;
+  border-bottom-color: #ff8c5a;
   background: rgba(255, 107, 53, 0.1);
 }
 
@@ -166,17 +166,18 @@
 }
 
 .btn-primary:disabled {
-  background: #555;
+  background: #4a4a4a;
+  color: #f0f0f0;
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.9;
 }
 
 .btn-secondary {
   width: 100%;
   padding: 0.875rem;
   background: transparent;
-  color: #ff6b35;
-  border: 2px solid #ff6b35;
+  color: #ffb088;
+  border: 2px solid #ff8c5a;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -196,7 +197,7 @@
 .error-message {
   background: rgba(220, 53, 69, 0.1);
   border: 1px solid rgba(220, 53, 69, 0.3);
-  color: #dc3545;
+  color: #f5a8a8;
   padding: 0.75rem;
   border-radius: 8px;
   margin-bottom: 1rem;
@@ -224,7 +225,7 @@
 .divider span {
   background: #2a2a2a;
   padding: 0 1rem;
-  color: #666;
+  color: #b3b3b3;
   position: relative;
   z-index: 1;
 }

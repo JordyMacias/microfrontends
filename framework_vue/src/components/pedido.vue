@@ -73,9 +73,9 @@
               />
             </div>
             <div v-else class="form-group">
-              <label for="cliente">Cliente</label>
+              <label for="cliente-logueado">Cliente</label>
               <input
-                id="cliente"
+                id="cliente-logueado"
                 :value="nombreUsuario"
                 type="text"
                 disabled
@@ -259,7 +259,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { crearPedido, obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
 import { obtenerUsuarioActual } from '../services/authService';
 import type { PedidoItem, Pedido } from '../types';
-import { isShellOrigin, postToParent } from '../config/messaging';
+import { isEmbeddedInShell, isShellOrigin, postToParent } from '../config/messaging';
 import '../styles/tasty.css';
 
 // Props - si se reciben items desde fuera
@@ -456,11 +456,11 @@ onMounted(async () => {
     }
   };
 
-  window.addEventListener('message', handleMessage);
-  onUnmounted(() => window.removeEventListener('message', handleMessage));
+  globalThis.addEventListener('message', handleMessage);
+  onUnmounted(() => globalThis.removeEventListener('message', handleMessage));
 
   // Solicitar el carrito al parent (Angular)
-  if (window.parent && window.parent !== window) {
+  if (isEmbeddedInShell()) {
     postToParent({ type: 'get-carrito' });
     // Retry corto por si Vue monta antes de que Angular guarde
     setTimeout(() => postToParent({ type: 'get-carrito' }), 300);
@@ -468,7 +468,7 @@ onMounted(async () => {
   }
 
   // Escuchar cambios de autenticación desde Angular
-  window.addEventListener('auth-changed', () => {
+  globalThis.addEventListener('auth-changed', () => {
     console.log('Evento auth-changed recibido - verificando usuario');
     verificarUsuarioLogueado();
     if (usuarioLogueado.value) {
@@ -477,7 +477,7 @@ onMounted(async () => {
   });
 
   // Escuchar cambios en storage (para detectar login desde Angular)
-  window.addEventListener('storage', (e) => {
+  globalThis.addEventListener('storage', (e) => {
     if (e.key === 'tasty_sesion' || e.key === 'tasty_usuario_actual') {
       console.log('Cambio detectado en storage de autenticación');
       verificarUsuarioLogueado();
@@ -606,10 +606,10 @@ const handleSubmit = async () => {
       // Limpiar carrito (compatible con React y Angular)
       localStorage.removeItem('carritoItems');
       items.value = [];
-      window.dispatchEvent(new CustomEvent('carrito-updated', { detail: [] }));
+      globalThis.dispatchEvent(new CustomEvent('carrito-updated', { detail: [] }));
       
       // Notificar al parent (Angular) que el carrito se limpió
-      if (window.parent && window.parent !== window) {
+      if (isEmbeddedInShell()) {
         try {
           postToParent({ type: 'set-carrito', items: [], sede: '' });
         } catch (e) {
@@ -725,7 +725,7 @@ const formatearEstado = (estado: Pedido['estado']) => {
 };
 
 const goToMenu = () => {
-  window.location.hash = '/menu';
+  globalThis.location.hash = '/menu';
 };
 
 // Cancelar pedido
@@ -777,7 +777,7 @@ const eliminarItemCarrito = (index: number) => {
       cantidad: item.cantidad
     }));
     localStorage.setItem('carritoItems', JSON.stringify(itemsParaGuardar));
-    window.dispatchEvent(new CustomEvent('carrito-updated', { detail: itemsParaGuardar }));
+    globalThis.dispatchEvent(new CustomEvent('carrito-updated', { detail: itemsParaGuardar }));
     alert('✅ Item eliminado del carrito');
     
     // Si no hay más items, cambiar a tab de listar

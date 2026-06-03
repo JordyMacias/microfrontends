@@ -39,7 +39,10 @@ export class Acceso {
     email: ''
   };
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private readonly router: Router,
+    private readonly authService: AuthService
+  ) {}
 
   limpiarError() {
     this.error = '';
@@ -58,7 +61,7 @@ export class Acceso {
       // Verificar si es admin primero
       if (this.authService.loginAdmin(this.loginData.email, this.loginData.password)) {
         // Es admin, redirigir al panel de admin
-        window.dispatchEvent(new CustomEvent('auth-changed'));
+        globalThis.dispatchEvent(new CustomEvent('auth-changed'));
         this.router.navigate(['/admin/menu']);
         return;
       }
@@ -90,7 +93,7 @@ export class Acceso {
       localStorage.setItem('tasty_usuario_actual', JSON.stringify(usuarioSesion));
 
       // Notificar cambio de autenticación
-      window.dispatchEvent(new CustomEvent('auth-changed'));
+      globalThis.dispatchEvent(new CustomEvent('auth-changed'));
       this.authService.cargarUsuarioActual();
 
       // Redirigir
@@ -114,19 +117,19 @@ export class Acceso {
     console.log('Intentando registrar usuario...', this.registerData);
 
     // Validaciones
-    if (!this.registerData.name || !this.registerData.name.trim()) {
+    if (!this.registerData.name?.trim()) {
       this.error = 'El nombre es requerido';
       console.error('Error: Nombre vacío');
       return;
     }
 
-    if (!this.registerData.email || !this.registerData.email.trim()) {
+    if (!this.registerData.email?.trim()) {
       this.error = 'El correo electrónico es requerido';
       console.error('Error: Email vacío');
       return;
     }
 
-    if (!this.registerData.password || !this.registerData.password.trim()) {
+    if (!this.registerData.password?.trim()) {
       this.error = 'La contraseña es requerida';
       console.error('Error: Contraseña vacía');
       return;
@@ -178,10 +181,10 @@ export class Acceso {
       // Separar nombre y apellido
       const nombreCompleto = this.registerData.name.trim().split(' ');
       const nombre = nombreCompleto[0] || this.registerData.name.trim();
-      const apellido = nombreCompleto.slice(1).join(' ') || this.registerData.apellido?.trim() || '';
+      const apellido = nombreCompleto.slice(1).join(' ') || this.registerData.apellido.trim() || '';
 
       const nuevoUsuario: Usuario = {
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         email: this.registerData.email.toLowerCase().trim(),
@@ -214,7 +217,7 @@ export class Acceso {
       console.log('Sesión guardada');
 
       // Notificar cambio de autenticación
-      window.dispatchEvent(new CustomEvent('auth-changed'));
+      globalThis.dispatchEvent(new CustomEvent('auth-changed'));
       this.authService.cargarUsuarioActual();
 
       console.log('Registro completado exitosamente');

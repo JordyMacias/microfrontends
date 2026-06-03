@@ -17,27 +17,23 @@ export class Shell implements OnInit, OnDestroy {
   protected readonly estaLogueado = signal(false);
   protected readonly nombreUsuario = signal('');
   protected readonly esAdmin = signal(false);
-  
-  private authSubscription?: Subscription;
 
-  constructor(private authService: AuthService) {}
+  private authSubscription?: Subscription;
+  private readonly onAuthChanged = () => this.actualizarEstadoAuth();
+
+  constructor(private readonly authService: AuthService) {}
 
   ngOnInit() {
     this.actualizarEstadoAuth();
     this.authSubscription = this.authService.usuario$.subscribe(() => {
       this.actualizarEstadoAuth();
     });
-    // Escuchar cambios de autenticación desde otros microfrontends
-    window.addEventListener('auth-changed', () => {
-      this.actualizarEstadoAuth();
-    });
+    globalThis.addEventListener('auth-changed', this.onAuthChanged);
   }
 
   ngOnDestroy() {
     this.authSubscription?.unsubscribe();
-    window.removeEventListener('auth-changed', () => {
-      this.actualizarEstadoAuth();
-    });
+    globalThis.removeEventListener('auth-changed', this.onAuthChanged);
   }
 
   private actualizarEstadoAuth() {
@@ -56,8 +52,7 @@ export class Shell implements OnInit, OnDestroy {
         this.authService.cerrarSesionAdmin();
       }
       this.authService.cerrarSesion();
-      // Redirigir al home después de cerrar sesión
-      window.location.href = '/home';
+      globalThis.location.href = '/home';
     }
   }
 }

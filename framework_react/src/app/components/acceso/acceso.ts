@@ -31,7 +31,7 @@ export class Acceso {
     email: ''
   };
 
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
 
   onLogin() {
     console.log('Login:', this.loginData);

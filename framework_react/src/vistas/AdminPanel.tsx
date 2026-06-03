@@ -52,7 +52,7 @@ export default function AdminPanel() {
       nombre: formData.get('nombre') as string,
       sede: formData.get('sede') as string,
       categoria: formData.get('categoria') as string,
-      precio: parseFloat(formData.get('precio') as string),
+      precio: Number.parseFloat(formData.get('precio') as string),
       descripcion: formData.get('descripcion') as string,
       ingredientes: formData.get('ingredientes') as string || '',
       imagen: formData.get('imagen') as string || ''
@@ -140,16 +140,16 @@ export default function AdminPanel() {
         return;
       }
       // Escuchar mensajes desde Angular parent
-      if (event.data && event.data.type === 'admin-section') {
+      if (event.data?.type === 'admin-section') {
         setActiveSection(event.data.section);
       }
     };
 
-    window.addEventListener('message', handleMessage);
+    globalThis.addEventListener('message', handleMessage);
 
-    // Detectar desde URL si está disponible
-    const hash = window.location.hash;
-    const pathname = window.location.pathname;
+    const win = globalThis as unknown as Window;
+    const hash = win.location.hash;
+    const pathname = win.location.pathname;
     
     if (hash.includes('#sedes') || pathname.includes('/admin/sedes')) {
       setActiveSection('sedes');
@@ -160,15 +160,13 @@ export default function AdminPanel() {
     }
 
     return () => {
-      window.removeEventListener('message', handleMessage);
+      globalThis.removeEventListener('message', handleMessage);
     };
   }, []);
 
   // Notificar al parent cuando cambie la sección (para sincronización)
   useEffect(() => {
-    if (window.parent && window.parent !== window) {
-      postToParent({ type: 'admin-section-changed', section: activeSection });
-    }
+    postToParent({ type: 'admin-section-changed', section: activeSection });
   }, [activeSection]);
 
   return (

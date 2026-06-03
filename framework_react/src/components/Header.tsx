@@ -10,9 +10,14 @@ export default function Header() {
   return (
     <header className="main-header">
       <div className="container header-inner">
-        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+        <button
+          type="button"
+          className="logo"
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit' }}
+        >
           Tasty Uleam
-        </div>
+        </button>
         <nav className="navbar">
           <Link to="/" className={isActive('/') ? 'active' : ''}>
             INICIO

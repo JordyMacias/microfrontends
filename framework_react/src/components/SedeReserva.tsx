@@ -118,7 +118,7 @@ const SedeReserva: FC<SedeReservaProps> = ({ sedeNombre, maxDate }) => {
               min="1"
               max="10"
               value={reservaForm.personas}
-              onChange={(e) => setReservaForm({ ...reservaForm, personas: parseInt(e.target.value) })}
+              onChange={(e) => setReservaForm({ ...reservaForm, personas: Number.parseInt(e.target.value, 10) })}
               required
             />
           </div>

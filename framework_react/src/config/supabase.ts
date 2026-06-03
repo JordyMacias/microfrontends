@@ -29,7 +29,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export const verificarConexionSupabase = async (): Promise<boolean> => {
   try {
     const { error } = await supabase.from('usuarios').select('count').limit(1);
-    if (error && error.message.includes('Failed to fetch')) {
+    if (error?.message.includes('Failed to fetch')) {
       return false;
     }
     return true;

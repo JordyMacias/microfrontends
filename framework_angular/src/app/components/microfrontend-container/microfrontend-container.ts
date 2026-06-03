@@ -59,7 +59,7 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
   iframeUrl: SafeResourceUrl | null = null;
 
   constructor(
-    private sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -92,13 +92,13 @@ export class MicrofrontendContainer implements OnInit, OnChanges {
 
   onIframeLoad() {
     // Emitir evento para comunicación postMessage si es necesario
-    window.dispatchEvent(new CustomEvent('microfrontend-loaded', {
+    globalThis.dispatchEvent(new CustomEvent('microfrontend-loaded', {
       detail: { app: this.app, route: this.route }
     }));
 
     // Enviar mensaje al iframe para indicar la sección (si es admin)
     const iframe = document.querySelector('.microfrontend-iframe') as HTMLIFrameElement;
-    if (iframe && iframe.contentWindow) {
+    if (iframe?.contentWindow) {
       // Detectar sección desde la ruta o hash
       let section = 'menu';
       const routeLower = this.route.toLowerCase();

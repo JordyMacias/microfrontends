@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface Usuario {
@@ -19,7 +19,6 @@ const STORAGE_KEY_SESION = 'tasty_sesion';
 const STORAGE_KEY_USUARIOS = 'tasty_usuarios';
 const STORAGE_KEY_ADMIN = 'tasty_admin_sesion';
 
-// Credenciales de administrador (configurables por entorno)
 const ADMIN_EMAIL = environment.adminEmail;
 const ADMIN_PASSWORD = environment.adminPassword;
 
@@ -27,18 +26,16 @@ const ADMIN_PASSWORD = environment.adminPassword;
   providedIn: 'root',
 })
 export class AuthService {
-  private usuarioActual = signal<Usuario | null>(null);
-  private usuarioSubject = new BehaviorSubject<Usuario | null>(null);
+  private readonly usuarioActual = signal<Usuario | null>(null);
+  private readonly usuarioSubject = new BehaviorSubject<Usuario | null>(null);
   public usuario$ = this.usuarioSubject.asObservable();
 
   constructor() {
     this.cargarUsuarioActual();
-    // Escuchar cambios en localStorage desde otros microfrontends
-    window.addEventListener('storage', () => {
+    globalThis.addEventListener('storage', () => {
       this.cargarUsuarioActual();
     });
-    // También escuchar eventos personalizados
-    window.addEventListener('auth-changed', () => {
+    globalThis.addEventListener('auth-changed', () => {
       this.cargarUsuarioActual();
     });
   }
@@ -52,7 +49,6 @@ export class AuthService {
         this.usuarioSubject.next(usuario);
         return;
       }
-      // Intentar desde localStorage como fallback
       const usuarioStr = localStorage.getItem('tasty_usuario_actual');
       if (usuarioStr) {
         const usuario = JSON.parse(usuarioStr) as Usuario;
@@ -83,8 +79,7 @@ export class AuthService {
       localStorage.removeItem('tasty_usuario_actual');
       this.usuarioActual.set(null);
       this.usuarioSubject.next(null);
-      // Notificar a otros microfrontends
-      window.dispatchEvent(new CustomEvent('auth-changed'));
+      globalThis.dispatchEvent(new CustomEvent('auth-changed'));
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -98,7 +93,6 @@ export class AuthService {
     return '';
   }
 
-  // Funciones de administrador
   loginAdmin(email: string, password: string): boolean {
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       try {
@@ -120,12 +114,13 @@ export class AuthService {
   esAdmin(): boolean {
     try {
       const adminStr = sessionStorage.getItem(STORAGE_KEY_ADMIN);
-      if (adminStr) {
-        const admin = JSON.parse(adminStr);
-        return admin.isAdmin === true && admin.email === ADMIN_EMAIL;
+      if (!adminStr) {
+        return false;
       }
-      return false;
+      const admin = JSON.parse(adminStr) as { isAdmin?: boolean; email?: string };
+      return admin.isAdmin === true && admin.email === ADMIN_EMAIL;
     } catch (error) {
+      console.error('Error al verificar sesión de admin:', error);
       return false;
     }
   }

@@ -5,7 +5,6 @@ interface SedeMenuProps {
   sedeNombre: string;
   categorias: string[];
   productos: Record<string, MenuItem[]>;
-  onAgregarProducto?: (itemId: number) => void;
 }
 
 const SedeMenu: FC<SedeMenuProps> = ({ sedeNombre, categorias, productos }) => {

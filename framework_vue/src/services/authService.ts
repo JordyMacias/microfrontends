@@ -81,7 +81,7 @@ const buscarUsuarioPorEmail = (email: string): Usuario | null => {
 
 // Generar ID único
 const generarIdUnico = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 };
 
 // Interface para datos de registro

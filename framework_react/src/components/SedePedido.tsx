@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import type { MenuItem, CarritoItem } from '../types';
-import { postToParent, postToTop } from '../config/messaging';
+import { isEmbeddedInShell, postToParent, postToTop } from '../config/messaging';
 
 const CARRITO_STORAGE_KEY = 'carritoItems';
 
@@ -20,11 +20,36 @@ const loadCarritoFromStorage = (): CarritoItem[] => {
 const saveCarritoToStorage = (items: CarritoItem[]) => {
   try {
     localStorage.setItem(CARRITO_STORAGE_KEY, JSON.stringify(items));
-    window.dispatchEvent(new CustomEvent('carrito-updated', { detail: items }));
+    globalThis.dispatchEvent(new CustomEvent('carrito-updated', { detail: items }));
   } catch (e) {
     console.error('Error saving carrito:', e);
   }
 };
+
+function navigateParentToPedido(): void {
+  const win = globalThis as unknown as Window;
+  const message = { type: 'navigate', route: '/pedido' };
+
+  if (isEmbeddedInShell()) {
+    postToParent(message);
+    if (win.top && win.top !== win && win.top !== win.parent) {
+      postToTop(message);
+    }
+    return;
+  }
+
+  win.location.href = '/pedido';
+}
+
+function scheduleNavigationFallback(): void {
+  const win = globalThis as unknown as Window;
+  setTimeout(() => {
+    if (win.location.pathname === '/pedido') {
+      return;
+    }
+    navigateParentToPedido();
+  }, 1000);
+}
 
 interface SedePedidoProps {
   sedeNombre: string;
@@ -37,12 +62,7 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
   const [carrito, setCarrito] = useState<CarritoItem[]>(loadCarritoFromStorage);
 
   useEffect(() => {
-    console.log('Carrito cambió, guardando en localStorage:', carrito);
     saveCarritoToStorage(carrito);
-    
-    // Verificar que se guardó correctamente
-    const verificado = loadCarritoFromStorage();
-    console.log('Carrito verificado después de guardar:', verificado);
   }, [carrito]);
 
   const actualizarCantidad = (itemId: number, cambio: number) => {
@@ -65,110 +85,29 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
   };
 
   const confirmarPedido = () => {
-    console.log('🔵 Botón "Ir a Realizar Pedido" clickeado');
-    
     if (carrito.length === 0) {
       alert('Tu carrito está vacío. Agrega items antes de confirmar.');
       return;
     }
 
-    console.log('=== INICIANDO NAVEGACIÓN A PEDIDO ===');
-    console.log('Carrito antes de navegar:', carrito);
-    console.log('Cantidad de items:', carrito.length);
-    
-    // Guardar en el storage de React (útil dentro del MF React)
     saveCarritoToStorage(carrito);
-
-    // Verificar que se guardó correctamente
     const carritoVerificado = loadCarritoFromStorage();
-    console.log('Carrito verificado después de guardar:', carritoVerificado);
-    
+
     if (carritoVerificado.length === 0) {
-      console.error('ERROR: El carrito no se guardó correctamente');
       alert('Error al guardar el carrito. Por favor intenta de nuevo.');
       return;
     }
 
-    // IMPORTANTE: React (5173) y Vue (5174) NO comparten localStorage.
-    // Enviamos el carrito al Angular (parent) para que Vue lo reciba.
-    const setCarritoMessage = { type: 'set-carrito', items: carritoVerificado, sede: sedeNombre };
-    if (window.parent && window.parent !== window) {
-      try {
-        postToParent(setCarritoMessage);
-        console.log('✅ Carrito enviado al parent (Angular) para Vue');
-      } catch (e) {
-        console.error('❌ Error enviando carrito al parent:', e);
-      }
+    if (isEmbeddedInShell()) {
+      postToParent({
+        type: 'set-carrito',
+        items: carritoVerificado,
+        sede: sedeNombre,
+      });
     }
 
-    // Redirigir a la página de pedidos de Vue (a través del shell de Angular)
-    // Enviar mensaje al parent (Angular) para navegar
-    console.log('window.parent:', window.parent);
-    console.log('window.top:', window.top);
-    console.log('window === window.parent:', window === window.parent);
-    
-    const message = { type: 'navigate', route: '/pedido' };
-    console.log('Mensaje a enviar:', message);
-    
-    let mensajeEnviado = false;
-    
-    // Intentar enviar mensaje al parent
-    if (window.parent && window.parent !== window) {
-      try {
-        console.log('✅ Enviando mensaje de navegación al parent');
-        postToParent(message);
-        mensajeEnviado = true;
-        console.log('✅ Mensaje enviado a window.parent');
-      } catch (error) {
-        console.error('❌ Error al enviar mensaje a parent:', error);
-      }
-    }
-    
-    // También intentar con window.top por si acaso
-    if (window.top && window.top !== window && window.top !== window.parent) {
-      try {
-        postToTop(message);
-        mensajeEnviado = true;
-        console.log('✅ Mensaje también enviado a window.top');
-      } catch (error) {
-        console.error('❌ Error al enviar mensaje a top:', error);
-      }
-    }
-    
-    // Si no se pudo enviar mensaje, usar fallback directo
-    if (!mensajeEnviado) {
-      console.log('⚠️ No se pudo enviar mensaje, usando navegación directa');
-      // Intentar navegar directamente en el parent si existe
-      if (window.parent && window.parent !== window) {
-        try {
-          (window.parent as any).location.href = '/pedido';
-        } catch (e) {
-          console.error('Error al navegar parent directamente:', e);
-          // Último recurso: navegar en la ventana actual
-          window.location.href = '/pedido';
-        }
-      } else {
-        window.location.href = '/pedido';
-      }
-    } else {
-      // Esperar un momento para ver si la navegación funciona
-      setTimeout(() => {
-        console.log('Verificando si la navegación funcionó...');
-        // Si después de 1 segundo aún estamos aquí, usar fallback
-        if (window.location.pathname !== '/pedido') {
-          console.log('⚠️ La navegación por mensaje no funcionó, usando fallback');
-          if (window.parent && window.parent !== window) {
-            try {
-              (window.parent as any).location.href = '/pedido';
-            } catch (e) {
-              window.location.href = '/pedido';
-            }
-          } else {
-            window.location.href = '/pedido';
-          }
-        }
-      }, 1000);
-    }
+    navigateParentToPedido();
+    scheduleNavigationFallback();
   };
 
   const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
@@ -180,22 +119,14 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
       return;
     }
 
-    console.log('Agregando item al carrito:', item);
-
     setCarrito(prev => {
       const itemEnCarrito = prev.find(i => i.id === itemId);
-      let nuevoCarrito;
-      
       if (itemEnCarrito) {
-        nuevoCarrito = prev.map(i =>
+        return prev.map(i =>
           i.id === itemId ? { ...i, cantidad: i.cantidad + 1 } : i
         );
-      } else {
-        nuevoCarrito = [...prev, { ...item, cantidad: 1 }];
       }
-      
-      console.log('Carrito actualizado:', nuevoCarrito);
-      return nuevoCarrito;
+      return [...prev, { ...item, cantidad: 1 }];
     });
 
     onAgregarAlCarrito(itemId);
@@ -230,6 +161,7 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
                         <p className="menu-item-categoria">{item.categoria}</p>
                         <p className="menu-item-descripcion">{item.descripcion}</p>
                         <button
+                          type="button"
                           className="btn-add-cart"
                           onClick={() => agregarAlCarrito(item.id)}
                         >
@@ -257,6 +189,7 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
                   </div>
                   <div className="carrito-item-controls">
                     <button
+                      type="button"
                       className="btn-cantidad"
                       onClick={() => actualizarCantidad(item.id, -1)}
                     >
@@ -264,12 +197,14 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
                     </button>
                     <span>{item.cantidad}</span>
                     <button
+                      type="button"
                       className="btn-cantidad"
                       onClick={() => actualizarCantidad(item.id, 1)}
                     >
                       +
                     </button>
                     <button
+                      type="button"
                       className="btn-remove"
                       onClick={() => removerDelCarrito(item.id)}
                     >
@@ -285,10 +220,10 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
           </div>
           <div className="carrito-total">
             <p>Total: ${total.toFixed(2)}</p>
-            <button className="btn-primary" onClick={confirmarPedido}>
+            <button type="button" className="btn-primary" onClick={confirmarPedido}>
               Ir a Realizar Pedido
             </button>
-            <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '10px', textAlign: 'center' }}>
+            <p style={{ fontSize: '0.85rem', color: '#b3b3b3', marginTop: '10px', textAlign: 'center' }}>
               Completa tus datos para finalizar el pedido
             </p>
           </div>
