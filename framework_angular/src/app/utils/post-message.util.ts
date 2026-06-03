@@ -30,18 +30,20 @@ export function isAllowedMicrofrontendUrl(url: string): boolean {
   }
 }
 
+function isWindowTarget(target: MessageEventSource): target is Window {
+  return typeof Window !== 'undefined' && target instanceof Window;
+}
+
 export function postMessageToTarget(
   target: MessageEventSource | null | undefined,
   targetOrigin: string,
   message: unknown
 ): void {
-  if (!target || !targetOrigin) {
+  if (!target || !targetOrigin || !isWindowTarget(target)) {
     return;
   }
   try {
-    if ('postMessage' in target && typeof target.postMessage === 'function') {
-      target.postMessage(message, targetOrigin);
-    }
+    target.postMessage(message, targetOrigin);
   } catch {
     // Ignorar errores de cross-origin en entorno local
   }
