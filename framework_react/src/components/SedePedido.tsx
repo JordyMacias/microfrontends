@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import type { MenuItem, CarritoItem } from '../types';
+import { postToParent, postToTop } from '../config/messaging';
 
 const CARRITO_STORAGE_KEY = 'carritoItems';
 
@@ -93,7 +94,7 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
     const setCarritoMessage = { type: 'set-carrito', items: carritoVerificado, sede: sedeNombre };
     if (window.parent && window.parent !== window) {
       try {
-        window.parent.postMessage(setCarritoMessage, '*');
+        postToParent(setCarritoMessage);
         console.log('✅ Carrito enviado al parent (Angular) para Vue');
       } catch (e) {
         console.error('❌ Error enviando carrito al parent:', e);
@@ -115,7 +116,7 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
     if (window.parent && window.parent !== window) {
       try {
         console.log('✅ Enviando mensaje de navegación al parent');
-        window.parent.postMessage(message, '*');
+        postToParent(message);
         mensajeEnviado = true;
         console.log('✅ Mensaje enviado a window.parent');
       } catch (error) {
@@ -126,7 +127,7 @@ const SedePedido: FC<SedePedidoProps> = ({ sedeNombre, categorias, productos, on
     // También intentar con window.top por si acaso
     if (window.top && window.top !== window && window.top !== window.parent) {
       try {
-        window.top.postMessage(message, '*');
+        postToTop(message);
         mensajeEnviado = true;
         console.log('✅ Mensaje también enviado a window.top');
       } catch (error) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { isShellOrigin, postToParent } from '../config/messaging';
 import GestionMenu from '../components/GestionMenu';
 
 import { obtenerMenuItems, guardarMenuItems, inicializarMenu } from '../services/menuService';
@@ -135,6 +136,9 @@ export default function AdminPanel() {
   // Detectar sección desde mensajes del parent (Angular) o URL
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      if (!isShellOrigin(event.origin)) {
+        return;
+      }
       // Escuchar mensajes desde Angular parent
       if (event.data && event.data.type === 'admin-section') {
         setActiveSection(event.data.section);
@@ -163,10 +167,7 @@ export default function AdminPanel() {
   // Notificar al parent cuando cambie la sección (para sincronización)
   useEffect(() => {
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage(
-        { type: 'admin-section-changed', section: activeSection },
-        '*'
-      );
+      postToParent({ type: 'admin-section-changed', section: activeSection });
     }
   }, [activeSection]);
 
