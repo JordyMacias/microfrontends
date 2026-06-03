@@ -42,18 +42,18 @@ export default function Inicio() {
 
           <div className="main-grid">
             <div className="sucursales-container">
-              <article className="card card-clickable" onClick={() => navigate('/sede/tasty-central')}>
+              <button type="button" className="card card-clickable" onClick={() => navigate('/sede/tasty-central')}>
                 <img src={tastyCentralImg} alt="Tasty Central" />
                 <div className="card-footer">Tasty Central</div>
-              </article>
-              <article className="card card-clickable" onClick={() => navigate('/sede/tasty-express')}>
+              </button>
+              <button type="button" className="card card-clickable" onClick={() => navigate('/sede/tasty-express')}>
                 <img src={tastyExpressImg} alt="Tasty Express" />
                 <div className="card-footer">Tasty Express</div>
-              </article>
-              <article className="card card-clickable" onClick={() => navigate('/sede/tasty-comedor')}>
+              </button>
+              <button type="button" className="card card-clickable" onClick={() => navigate('/sede/tasty-comedor')}>
                 <img src={tastyComedorImg} alt="Tasty Comedor" />
                 <div className="card-footer">Tasty Comedor</div>
-              </article>
+              </button>
             </div>
 
             <aside className="cta-sidebar">

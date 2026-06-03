@@ -44,6 +44,11 @@ export default function AdminPanel() {
 
 
 
+  const cerrarModal = () => {
+    setShowModal(false);
+    setEditingItem(null);
+  };
+
   const handleGuardarItem = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -71,8 +76,7 @@ export default function AdminPanel() {
 
     guardarMenuItems(items);
     setMenuItems(items);
-    setShowModal(false);
-    setEditingItem(null);
+    cerrarModal();
   };
 
   const handleEditarItem = (item: MenuItem) => {
@@ -371,11 +375,18 @@ export default function AdminPanel() {
       </main>
 
       {showModal && (
-        <div className="modal show" onClick={(e) => { if (e.target === e.currentTarget) { setShowModal(false); setEditingItem(null); } }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal show"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="menu-modal-title"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) cerrarModal(); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') cerrarModal(); }}
+        >
+          <div className="modal-content" onMouseDown={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editingItem ? 'Editar Item del Menú' : 'Agregar Item al Menú'}</h3>
-              <button className="modal-close" onClick={() => { setShowModal(false); setEditingItem(null); }}>&times;</button>
+              <h3 id="menu-modal-title">{editingItem ? 'Editar Item del Menú' : 'Agregar Item al Menú'}</h3>
+              <button type="button" className="modal-close" onClick={cerrarModal} aria-label="Cerrar">&times;</button>
             </div>
             <form onSubmit={handleGuardarItem} className="admin-form">
               <div className="form-group">
@@ -455,7 +466,7 @@ export default function AdminPanel() {
                 />
               </div>
               <div className="form-actions">
-                <button type="button" className="btn-outline" onClick={() => { setShowModal(false); setEditingItem(null); }}>
+                <button type="button" className="btn-outline" onClick={cerrarModal}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary">

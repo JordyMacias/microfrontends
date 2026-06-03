@@ -28,7 +28,7 @@ const SedeMenu: FC<SedeMenuProps> = ({ sedeNombre, categorias, productos }) => {
                     ) : (
                       <div className="image-placeholder">
                         <span>
-                          📷 Imagen no disponible
+                          {'📷 Imagen no disponible '}
                           <small>El administrador puede cargar una imagen aquí</small>
                         </span>
                       </div>
