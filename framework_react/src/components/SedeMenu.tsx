@@ -8,7 +8,7 @@ interface SedeMenuProps {
   onAgregarProducto?: (itemId: number) => void;
 }
 
-const SedeMenu: FC<SedeMenuProps> = ({ sedeNombre, categorias, productos, onAgregarProducto }) => {
+const SedeMenu: FC<SedeMenuProps> = ({ sedeNombre, categorias, productos }) => {
   return (
     <section className="menu-section">
       <h2 className="section-title">Menú de {sedeNombre}</h2>

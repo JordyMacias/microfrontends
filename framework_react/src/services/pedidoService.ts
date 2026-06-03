@@ -10,13 +10,13 @@ export const obtenerPedidos = (): Pedido[] => {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Array<Record<string, unknown>>;
     return parsed.map((p) => ({
-      id: Number(p.id),
-      fecha: typeof p.fecha === 'string' ? p.fecha : new Date().toISOString(),
-      sede: String(p.sede ?? ''),
-      items: Array.isArray(p.items) ? p.items as PedidoItem[] : [],
-      total: Number(p.total ?? 0),
-      estado: (p.estado as Pedido['estado']) || 'pendiente',
-      cliente: String(p.cliente ?? ''),
+      id: Number(p['id']),
+      fecha: typeof p['fecha'] === 'string' ? p['fecha'] : new Date().toISOString(),
+      sede: String(p['sede'] ?? ''),
+      items: Array.isArray(p['items']) ? p['items'] as PedidoItem[] : [],
+      total: Number(p['total'] ?? 0),
+      estado: (p['estado'] as Pedido['estado']) || 'pendiente',
+      cliente: String(p['cliente'] ?? ''),
     }));
   } catch {
     return [];
@@ -58,9 +58,9 @@ export const actualizarEstadoPedido = (id: number, estado: Pedido['estado']): vo
   if (!raw) return;
   try {
     const pedidos = JSON.parse(raw) as Array<Record<string, unknown>>;
-    const index = pedidos.findIndex((p) => Number(p.id) === id);
+    const index = pedidos.findIndex((p) => Number(p['id']) === id);
     if (index !== -1) {
-      pedidos[index].estado = estado;
+      pedidos[index]['estado'] = estado;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(pedidos));
     }
   } catch {

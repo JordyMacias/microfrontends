@@ -257,7 +257,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { crearPedido, obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
-import { obtenerUsuarioActual, cerrarSesion as cerrarSesionUsuario } from '../services/authService';
+import { obtenerUsuarioActual } from '../services/authService';
 import type { PedidoItem, Pedido } from '../types';
 import '../styles/tasty.css';
 
@@ -721,31 +721,8 @@ const formatearEstado = (estado: Pedido['estado']) => {
   return estados[estado] || estado;
 };
 
-const goHome = () => {
-  window.location.hash = '/';
-};
-
-const goToPedidos = () => {
-  window.location.hash = '/pedido';
-};
-
 const goToMenu = () => {
   window.location.hash = '/menu';
-};
-
-const goToLogin = () => {
-  window.location.hash = '/login';
-};
-
-// Cerrar sesión
-const cerrarSesion = async () => {
-  if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-    await cerrarSesionUsuario();
-    usuarioLogueado.value = false;
-    misPedidos.value = [];
-    alert('Has cerrado sesión exitosamente.');
-    window.location.hash = '/login';
-  }
 };
 
 // Cancelar pedido

@@ -94,7 +94,7 @@ export default function Sede() {
     }
   };
 
-  const agregarAlCarrito = (itemId: number) => {
+  const agregarAlCarrito = (_itemId: number) => {
     // Este método ahora es manejado por los componentes hijos
     // Aquí solo lo dejamos para mantener la interfaz consistente
   };

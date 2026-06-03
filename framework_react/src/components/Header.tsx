@@ -1,17 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import '../styles/tasty.css';
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-
-
-
-
 
   const isActive = (path: string) => location.pathname === path;
 

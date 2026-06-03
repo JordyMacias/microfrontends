@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import type { MenuItem, CarritoItem } from '../types';
-import { crearPedido } from '../services/pedidoService';
 
 const CARRITO_STORAGE_KEY = 'carritoItems';
 
