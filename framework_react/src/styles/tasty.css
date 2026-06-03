@@ -148,6 +148,7 @@ a{transition:color .12s ease}
 /* Estilos para páginas de sedes */
 .card-clickable{cursor:pointer;transition:transform .2s ease,box-shadow .2s}
 .card-clickable:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(2,6,23,0.7)}
+button.card.card-clickable{border:none;background:transparent;padding:0;text-align:inherit;font:inherit;color:inherit;width:100%;display:block}
 
 /* Hero de sede */
 .sede-hero{padding:30px 0}
