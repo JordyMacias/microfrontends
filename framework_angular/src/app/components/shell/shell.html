@@ -1,0 +1,45 @@
+<div class="shell-container">
+  <header class="shell-header">
+    <div class="shell-header-inner">
+      <a routerLink="/home" class="shell-logo">
+        <h1>{{ title() }}</h1>
+      </a>
+      <button class="shell-nav-toggle" (click)="toggleNav()" aria-label="Toggle menu">
+        <span class="hamburger"></span>
+        <span class="hamburger"></span>
+        <span class="hamburger"></span>
+      </button>
+      <nav class="shell-nav" [class.open]="isNavOpen()">
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          Inicio
+        </a>
+        
+        <!-- Opciones solo para usuarios normales (no admin) -->
+        <ng-container *ngIf="!esAdmin()">
+          <a routerLink="/sedes" routerLinkActive="active">Sedes / Menú</a>
+          <a routerLink="/pedido" routerLinkActive="active">Mis Pedidos</a>
+        </ng-container>
+        
+        <!-- Opciones de administración (solo para admins) -->
+        <ng-container *ngIf="esAdmin()">
+          <a routerLink="/admin/menu" routerLinkActive="active">Menú</a>
+          <a routerLink="/admin/pedidos" routerLinkActive="active">Pedidos</a>
+          <a routerLink="/admin/sedes" routerLinkActive="active">Sedes</a>
+        </ng-container>
+        
+        <!-- Autenticación -->
+        <div class="shell-auth" *ngIf="estaLogueado() || esAdmin(); else noLogueado">
+          <span class="shell-user" *ngIf="!esAdmin()">👤 {{ nombreUsuario() }}</span>
+          <span class="shell-user" *ngIf="esAdmin()">👤 Administrador</span>
+          <button class="shell-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+        <ng-template #noLogueado>
+          <a routerLink="/acceso" class="shell-login">Iniciar Sesión</a>
+        </ng-template>
+      </nav>
+    </div>
+  </header>
+  <main class="shell-main">
+    <router-outlet />
+  </main>
+</div>
