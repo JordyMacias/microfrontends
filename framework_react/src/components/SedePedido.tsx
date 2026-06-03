@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
 import type { MenuItem, CarritoItem } from '../types';
-import { isEmbeddedInShell, postToParent, postToTop } from '../config/messaging';
+import { isEmbeddedInShell, postToParent, postToTop } from '@shared/config/messaging';
 
 const CARRITO_STORAGE_KEY = 'carritoItems';
 

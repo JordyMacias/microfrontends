@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { isShellOrigin, postToParent } from '../config/messaging';
+import { isShellOrigin, postToParent } from '@shared/config/messaging';
 import GestionMenu from '../components/GestionMenu';
 
 import { obtenerMenuItems, guardarMenuItems, inicializarMenu } from '../services/menuService';

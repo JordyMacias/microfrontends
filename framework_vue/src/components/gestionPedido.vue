@@ -112,7 +112,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
 import type { Pedido } from '../types';
-import { isEmbeddedInShell, postToParent } from '../config/messaging';
+import { isEmbeddedInShell, postToParent } from '@shared/config/messaging';
 import '../styles/tasty.css';
 
 // No necesita emits ahora

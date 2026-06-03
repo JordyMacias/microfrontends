@@ -62,8 +62,19 @@ export function toTrustedMicrofrontendResourceUrl(
   app: MicrofrontendApp,
   route: string
 ): SafeResourceUrl | null {
-  const url = buildMicrofrontendUrl(app, route);
-  if (!url) {
+  if (!isMicrofrontendApp(app)) {
+    return null;
+  }
+
+  const path = normalizeMicrofrontendRoute(route);
+  if (!path) {
+    return null;
+  }
+
+  const baseUrl = MICROFRONTEND_CONFIG[app].baseUrl.replace(/\/$/, '');
+  const url = `${baseUrl}${path}`;
+
+  if (!isAllowedMicrofrontendUrl(url)) {
     return null;
   }
 

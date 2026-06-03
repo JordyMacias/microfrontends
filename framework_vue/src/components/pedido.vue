@@ -259,7 +259,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { crearPedido, obtenerPedidos, actualizarEstadoPedido } from '../services/pedidoService';
 import { obtenerUsuarioActual } from '../services/authService';
 import type { PedidoItem, Pedido } from '../types';
-import { isEmbeddedInShell, isShellOrigin, postToParent } from '../config/messaging';
+import { isEmbeddedInShell, isShellOrigin, postToParent } from '@shared/config/messaging';
 import '../styles/tasty.css';
 
 // Props - si se reciben items desde fuera
